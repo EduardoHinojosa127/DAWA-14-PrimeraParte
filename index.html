@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Carga de archivos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 20px;
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 300px;
+    }
+
+    input[type="submit"] {
+      padding: 10px 20px;
+      background-color: #2f79ce;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #file-info {
+      margin-top: 20px;
+    }
+
+    #file-info p {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Carga de archivos</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+      <div id="file-inputs">
+        <input type="file" name="files" />
+      </div>
+      <button id="add-file-button" type="button">Agregar archivo</button>
+      <input type="submit" value="Cargar" />
+    </form>
+
+    <div id="file-info"></div>
+
+    <script>
+      const form = document.getElementById('upload-form');
+      const fileInputsContainer = document.getElementById('file-inputs');
+      const addFileButton = document.getElementById('add-file-button');
+      const fileInfoDiv = document.getElementById('file-info');
+
+      addFileButton.addEventListener('click', () => {
+        const newFileInput = document.createElement('input');
+        newFileInput.type = 'file';
+        newFileInput.name = 'files';
+        fileInputsContainer.appendChild(newFileInput);
+      });
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const fileInfos = await response.json();
+          fileInfoDiv.innerHTML = '';
+
+          fileInfos.forEach((fileInfo) => {
+            const fileElement = document.createElement('div');
+            fileElement.innerHTML = `
+              <p><strong>Nombre:</strong> ${fileInfo.filename}</p>
+              <p><strong>Nombre original:</strong> ${fileInfo.originalname}</p>
+              <p><strong>Tamaño:</strong> ${fileInfo.size} bytes</p>
+              <p><strong>Tipo MIME:</strong> ${fileInfo.mimetype}</p>
+              <hr />
+            `;
+            fileInfoDiv.appendChild(fileElement);
+          });
+
+          // Limpiar formulario y eliminar entradas de archivo
+          form.reset();
+          fileInputsContainer.innerHTML = '';
+        } else {
+          fileInfoDiv.innerHTML = '<p>Error al cargar los archivos.</p>';
+        }
+      });
+    </script>
+  </div>
+</body>
+</html>
